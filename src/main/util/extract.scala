@@ -25,7 +25,9 @@ def extractJar(file: File) {
 
   println("Extracting " + file + " to " + todir)
   val jar = new JarFile(file)
-  for (entry: JarEntry <-jar.entries) {
+  val entries = jar.entries
+  while (entries.hasMoreElements) {
+    val entry=entries.nextElement()
     val entryPath = getEntryPath(entry.getName, baseName)
 
     println("Extracting to " + todir + "/" + entryPath)
@@ -44,10 +46,11 @@ def accept(file: File) = List("gz", ".zip", ".jar").find {ext => file.getName.en
 
 def extractFile(fileName: String ) {  extractFile(new File(fileName)) }
 
-def extractFile(fn: File) {
-  if (fn.isDirectory) extractFolder(fn) else if (accept(fn)) extractJar(fn)
+def extractFile(file: File) {
+  if (file.isDirectory) extractFolder(file) else if (accept(file)) extractJar(file)
 }
 
-def extractFolder(fn: File) { for (f <- fn.listFiles if (accept(f)) ) extractJar(f) }
+//Extract all files within folder recursively
+def extractFolder(fn: File) { for (f <- fn.listFiles if (accept(f)) ) extractFolder(f) }
 
-if (args == null || args.size<1) extractFile("") else for (arg <- args)  extractFile(arg)
+if (args == null || args.size<1) extractFile(".") else for (arg <- args)  extractFile(arg)
